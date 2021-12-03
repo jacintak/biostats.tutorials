@@ -1,0 +1,576 @@
+---
+title: "Model selection"
+output: 
+  learnr::tutorial:
+    theme: readable
+    progressive: true
+runtime: shiny_prerendered
+description: "Choosing the most parsimonious model"
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+library(MASS)
+knitr::opts_chunk$set(comment = NA, echo = FALSE)
+tutorial_options(exercise.completion = FALSE)
+```
+
+## Introduction
+
+This tutorial will look at how to choose the best statistical model for your data, focussing on multiple linear regressions with two predictor variables and one continuous response variable.
+
+**The tutorial assumes that you know how to do simple and multiple linear regressions in R using `lm` and basic plotting**. If not, revise these concepts or try another tutorial first.
+
+ > The aim of statistical modelling is to find a model that best describes your data
+ 
+Usually by explaining as much variation in $Y$ as possible and attributing that variation to $X_i$, where $i$ is any number of predictor variables, categorical or continuous. Thus, we minimise residual variation, $\varepsilon$.
+
+One way to explain more variation is to add more predictor variables. But we cannot explain *all* natural random variation because we cannot fully control nature. And you can have too many predictor variables. We risk over-fitting the model and losing inference.
+
+So, we need to choose the best model that can compromise between how much variation is explained and the utility or power to make inferences with the model. This is the philosophical basis of model selection:
+
+> **Parsimony**: Explain the most variation in $Y$ using the fewest terms (variables) possible
+
+Thus, we aim to select the most parsimonious model for a dataset.
+
+***
+
+## Full & reduced models
+
+We can describe models by how many terms ($\beta$) they have. Look at these three models:
+
+ $$ Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \beta_3 X_1 X_2 + \varepsilon $$
+ $$ Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \varepsilon $$
+ $$ Y = \beta_0 + \beta_1 X_1 + \varepsilon $$
+
+They all have different number of $\beta$ coefficients, thus they provide different descriptions of variation in $Y$. 
+
+> $\beta$ coefficients describe the **additional** variation attributed to each term in the model. Together they describe the cumulative variation explained by the model. In combination with $\varepsilon$, they describe the total variation in $Y$, both explained and unexplained.
+
+The first model has two predictor variables $X_1$ and $X_2$ and their respective coefficients $\beta_1$ and $\beta_2$ describe the *additive* effect of each predictor variable relative to the **grand intercept** $\beta_0$. The fourth term $\beta_3$ describes the additional effect of the interaction between $X_1$ and $X_2$. In other words, how much $X_1$ and $X_2$ influence each other's effect on $Y$.
+
+This first model has all the possible combination of terms for a multiple regression including the interaction. Thus, this model is called a **full model**.
+
+ $$ Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \beta_3 X_1 X_2 + \varepsilon $$
+ 
+The second model has all the terms as the full model **except** the interaction, $\beta_3$. Thus this model is saying that the effect of $X_1$ and $X_2$ are independent of each other's effect on $Y$. This is an **additive** model that is **reduced** compared with the full model. 
+
+ $$ Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \varepsilon $$
+
+ > Reduced models have fewer terms than a full model, which has all possible terms
+ 
+The third model is more reduced than the additive model. It has only one predictor variable, so it has only two terms in the model: the slope and the intercept. This is a simple linear regression.
+
+ $$ Y = \beta_0 + \beta_1 X_1 + \varepsilon $$
+ 
+```{r parsimony} 
+question(
+  "All else equal, which of the three models is the most parsimonious?",
+  answer("$Y = \\beta_0 + \\beta_1 X_1 + \\beta_2 X_2 + \\beta_3 X_1 X_2 + \\varepsilon$"),
+  answer("$Y = \\beta_0 + \\beta_1 X_1 + \\beta_2 X_2 + \\varepsilon$"),
+  answer("$Y = \\beta_0 + \\beta_1 X_1 + \\varepsilon$", correct = TRUE, message = "The simple linear regression has the fewest number of coefficients."),
+  allow_retry = TRUE,
+  random_answer_order = TRUE,
+  incorrect = "What is the definition of parsimony?"
+)
+```
+
+We don't choose models solely on the number of terms.  
+
+Just because the additive or the simple linear regression has fewer terms than the full model does not mean it is the best choice to describe a given dataset. 
+
+We still need to evaluate how much variation is explained by each model then decide which of the three possibilities gives us our best bang for our buck, so to speak. 
+
+***
+
+## Dropping variables
+
+A simple way of seeing whether a model coefficient is informative is evaluating the question "Does the model coefficient explain significant variation in $Y$ compared to it's absence?". 
+
+If a coefficient explains a significant amount of variation, then it can be kept in the model.  
+If a coefficient does not explain a significant amount of variation, then it can be removed from the model. This is called **dropping terms**.
+
+We can keep dropping non-significant terms starting from the full model until we get the most parsimonious model.
+
+How do we evaluate how much variation is explained by each coefficient? A statistical test on whether the **additional effect** of the coefficient on the overall slope or the intercept of the model is greater than 0. This is exactly the same as hypothesis testing.
+
+```{r tests}
+question("Which of these statistical tests would test whether the additional variation explained is significantly different to 0?",
+                  answer("One sample t test", correct = TRUE),
+                  answer("Analysis of Variance"),
+                  answer("Two sample t test"),
+                  answer("Paired t test"),
+                  allow_retry = TRUE,
+                  random_answer_order = TRUE
+)
+```
+
+This is not the most sophisticated way of selecting significant predictor variables but it demonstrates parsimony in action which forms the basis of model selection.
+
+***
+
+### Evaluating variables to drop
+
+The one sample t-test on the additional effect of a $\beta$ coefficient on $Y$ tests the following hypotheses:
+ 
+ * H0: effect = 0
+ * H1: effect $\neq$ 0
+ 
+If the P value of the t-test is less than 0.05 then we can reject the null hypothesis and conclude that the model coefficient contributes significant explanatory value and so should be retained in the model.
+
+The results of the t-tests can be viewed by calling `summary` on our linear regression.
+
+Let's look at an example dataset `cats` in the package `MASS`. The package is loaded for you. This is a dataset of the heart and body size of male and female cats. There are three variables:
+
+ * `Hwt`: Heart weight, numeric
+ * `Bwt`: Body weight, numeric
+ * `Sex`: Sex (Male or Female), categorical (factor)
+
+```{r cats-str}
+str(cats)
+```
+
+We can ask the question "Is the full model with an interaction more parsimonious than an additive model without an interaction?".
+
+This is the same as asking "Do male and female cats have different relationships between heart weight (response) and body weight (predictor)?".
+
+If the t-test on the $\beta_3$ coefficient is non-significant in the full model, then the interaction term $\beta_3$ does not explain a significant amount of variation and can be dropped. The model with the next fewest terms is the additive model. Thus, the additive model is more parsimonious.
+
+This means each regression line for Sex is parallel:
+
+```{r cats-graph, fig.cap="A reduced additive model"}
+plot(Hwt ~ Bwt, cats, bty = "l", type = "n")
+points(Hwt ~ Bwt, cats[cats$Sex == "F",], pch = 16, col = "purple")
+points(Hwt ~ Bwt, cats[cats$Sex == "M",], pch = 16, col = "darkorange")
+abline(-0.41495263,  4.0758 , lwd = 2, col = "purple")
+abline(-0.41495263-0.08209684, 4.0758 , lwd = 2, col = "darkorange")
+legend("topleft", bty = "n", c("Female", "Male"), col = c("purple", "darkorange"), pch = c(16,16))
+```
+
+In contrast, if the full model is more parsimonious, then the t-test on the $\beta_3$ coefficient should be significant. The regression lines should then have different slopes and intercepts:
+
+```{r cats-graph2, fig.cap="The full interactive model"}
+plot(Hwt ~ Bwt, cats, bty = "l", type = "n")
+points(Hwt ~ Bwt, cats[cats$Sex == "F",], pch = 16, col = "purple")
+points(Hwt ~ Bwt, cats[cats$Sex == "M",], pch = 16, col = "darkorange")
+abline(2.9813,  2.6364, lwd = 2, col = "purple")
+abline(2.9813 -4.1654,  2.6364 + 1.6763, lwd = 2, col = "darkorange")
+legend("topleft", bty = "n", c("Female", "Male"), col = c("purple", "darkorange"), pch = c(16,16))
+```
+
+***
+
+## Dropping an interaction
+
+> We drop one non-significant coefficient at a time starting with any interactions then with predictor variables.
+
+We cannot remove the effect of one predictor while keeping its interaction in the model (Can't have an interaction without the additive effect). But we can have the independent additive effect of each predictor without interactions.
+
+In `R`, the **order of variables** is important because that is the order that `R` will partition variance in $Y$. For categorical predictors, `R` will assign variation in **alphabetical order** by default, unless you have specified an order (`levels` of a `factor`).
+
+So in the `cats` dataset, variation attributed to female cats gets partitioned first, then males. Thus $\beta_0$ and $\beta_1$ refers to female cats.
+
+In `summary`, `R` will show each of the consecutive $\beta$ coefficients in the order it was given, starting with $\beta_0$. Thus, each line in the coefficients table corresponds to a $\beta$ coefficient. Which makes it easy to parameterise the model.
+
+### It's time to fit our linear regression and evaluate its parsimony
+
+Remember the general formula for a full multiple linear regression is `lm(Y ~ X1 * X2, data)` where `*` indicates an interaction between the predictor variables and `+` indicates no interaction.
+
+*Construct the full linear regression for the `cats` dataset with heart weight as the response variable and body weight and sex as the predictor variables within the summary function*
+```{r cats, exercise = TRUE}
+summary()
+```
+```{r cats-hint-1}
+Hwt is Heart weight. Bwt is Body weight. Sex is sex. The name of the dataset is cats.
+```
+```{r cats-hint-2}
+the general formula for two predictor variables is lm(Y ~ X1 * X2, data)
+Do we need a * or a +?
+```
+
+Now, we can look at the t-test on the interaction $\beta_3$ to see whether or not we can drop the interaction and choose the additive model as the more parsimonious model.
+
+```{r cats-quiz}
+question_radio("Based on the one sample t-test on the interaction, is the reduced or full model more parsimonious?",
+               answer("Full model", correct = TRUE, message = "$\\beta_3$ was significant, which means we can't remove it from the model without losing some predictive power on the variation in heart weight."),
+               answer("Reduced additive model"),
+               allow_retry = TRUE,
+               random_answer_order = TRUE,
+               incorrect = "Look at the P value on the interaction coefficient `Bwt:SexM`"
+)
+```
+
+## `cats` conclusion
+
+Since the interaction was significant, the interaction becomes the main conclusion of our analyses and the full model is the most parsimonious model. 
+
+We can see a strong interaction in the regression lines of the full model:
+
+```{r cats-graph3, fig.cap="The full interactive model"}
+plot(Hwt ~ Bwt, cats, bty = "l", type = "n")
+points(Hwt ~ Bwt, cats[cats$Sex == "F",], pch = 16, col = "purple")
+points(Hwt ~ Bwt, cats[cats$Sex == "M",], pch = 16, col = "darkorange")
+abline(2.9813,  2.6364, lwd = 2, col = "purple")
+abline(2.9813 -4.1654,  2.6364 + 1.6763, lwd = 2, col = "darkorange")
+legend("topleft", bty = "n", c("Female", "Male"), col = c("purple", "darkorange"), pch = c(16,16))
+```
+
+The final model is:
+
+ $$ Heart weight = \beta_0 + \beta_1 Body weight + \beta_2 Sex_{Male} + \beta_3 Body weight Sex_{Male} + \varepsilon $$
+ 
+ $$ Heart weight = 2.98 + 2.64Body weight - 4.17 Sex_{Male} + 1.68 Body weight Sex_{Male} + \varepsilon $$
+
+Let's try another example.
+
+***
+
+## `cabbages`
+
+`cabbages` is an dataset in `MASS` describing the Vitamin C (`VitC`) content of two varieties (cultivars) of cabbages (`Cult`) and the size of the cabbage (`HeadWt`).
+
+```{r cabbage}
+str(cabbages)
+```
+
+Let's use `VitC` as the response variable, `HeadWt` as the first predictor variable and `Cult` as the second predictor variable. The structure of the dataset is the same as `cats`.
+
+*Get the summary of the full linear regression for the `cabbages` dataset*
+```{r cabbage-exer, exercise = TRUE}
+
+```
+```{r cabbage-exer-hint}
+It's the same as we did for cats but with different variable names
+```
+
+`HeadWt:Cultc52` is the estimated value of $\beta_3$, the interaction. 
+
+```{r cabbage-quiz}
+question_radio("Based on the one sample t-test on the interaction, is the reduced or full model more parsimonious?",
+               answer("Reduced model", correct = TRUE, message = "$\\beta_3$ is not significant, which means we can remove it from the model without losing some predictive power on the variation in vitamin C concentration."),
+               answer("Full model"),
+               allow_retry = TRUE,
+               random_answer_order = TRUE,
+               incorrect = "Look at the P value on the interaction coefficient `HeadWt:Cultc52`"
+)
+```
+
+## Checking the additive model
+
+OK! The interaction is not significant so we can drop the interaction term $\beta_3$.
+
+Since the full model was not the most parsimonious, we won't use the rest of the information to make our final conclusions and hypothesis tests about the dataset.
+
+We need to re-do our analysis with the reduced additive model to get our final conclusions we report on.
+
+*Get the summary of the additive linear regression for the `cabbages` dataset. `VitC` is the response variable, `HeadWt` is the first predictor variable and `Cult` is the second predictor variable.*
+```{r cabbage-exer-add, exercise = TRUE}
+
+```
+```{r cabbage-exer-add-hint-1}
+It's the same as we did for the full model but with a different notation for no interaction
+```
+```{r cabbage-exer-add-hint-2}
+Should the relationship between our predictors be * or +?
+```
+
+We drop coefficient sequentially in reverse order that they are used to partition variation. The next coefficient to be dropped in $\beta_2$ to remove the effect of the second predictor variable and choose a simple linear regression, instead of a multiple linear regression.
+
+```{r cabbage-quiz2}
+question_radio("Based on the summary of the additive model, can we reduce the model further by dropping more terms?",
+               answer("No", correct = TRUE, message = "All model coefficients significantly explain variation according to the one sample t-test"),
+               answer("Yes"),
+               allow_retry = TRUE,
+               random_answer_order = TRUE,
+               incorrect = "Look at the t-test on the coefficients"
+)
+```
+
+In this case, the additive model is the most parsimonious. The model is:
+
+$$ Vitamin C = \beta_0 + \beta_1 Weight + \beta_2 Cultivar + \varepsilon $$
+$$ Vitamin C = 67.93 - 5.65 Weight + 9.36 Cultivar + \varepsilon $$
+
+Let's plot the additive model and the regression line.
+
+*The code below is the code to plot the additive model graph for `cats` seen before, including the parameterised regression lines. Modify the code to plot the additive model for `cabbages`.*
+```{r plot-cabbage, exercise = TRUE, exercise.eval = TRUE}
+# Main empty plot
+plot(Hwt ~ Bwt, cats, bty = "l", type = "n")
+# Points for female cats
+points(Hwt ~ Bwt, cats[cats$Sex == "F",], pch = 16, col = "purple")
+# Points for male cats
+points(Hwt ~ Bwt, cats[cats$Sex == "M",], pch = 16, col = "darkorange")
+# Regression for female cats
+abline(a = -0.4149, b = 4.0758, lwd = 2, col = "purple")
+# Regression for male cats
+abline(-0.4149-0.082, 4.0758 , lwd = 2, col = "darkorange")
+# Add a legend
+legend(x = "topleft", bty = "n", legend = c("Female", "Male"), col = c("purple", "darkorange"), pch = c(16, 16))
+```
+```{r plot-cabbage-hint-1}
+You don't need to change the structure of the code.
+Just change the R object names and the column names. 
+You can also change the aesthetics if you'd like
+```
+```{r plot-cabbage-hint-2}
+VitC is the response variable
+HeadWt is the first predictor variable
+Cult is the second predictor variable
+```
+```{r plot-cabbage-hint-3}
+Cult has two sub-groups (levels): "c39" or "c52" that need to be plotted separately
+```
+```{r plot-cabbage-hint-4}
+Make sure to replace the abline with the correct values for the slope and the intercept from the summary of the linear regression
+```
+
+If you've got it, the graph should look like this:
+
+```{r plot-cabbage-final}
+plot(VitC ~ HeadWt, cabbages, bty = "l", type = "n")
+points(VitC ~ HeadWt, cabbages[cabbages$Cult == "c39",], pch = 16, col = "purple")
+points(VitC ~ HeadWt, cabbages[cabbages$Cult == "c52",], pch = 16, col = "darkorange")
+abline(a = 67.9297, b = -5.6524, lwd = 2, col = "purple")
+abline(a = 67.9297 + 9.3578, b = -5.6524, lwd = 2, col = "darkorange")
+legend(x = "topleft", bty = "n", legend = c("c39", "c52"), col = c("purple", "darkorange"), pch = c(16,16))
+```
+
+There's a negative relationship between the size of the cabbage and the Vitamin C content.
+
+ > Eat your greens
+ 
+Let's try a final example of dropping a predictor variable.
+
+***
+
+## NPK
+
+Nitrogen, phosphorous and potassium are three important nutrients for the healthy growth of plants. They are the main components of most fertilisers. `npk` is a dataset describing the yield of plants within a plot given all possible combinations of nitrogen (N), phosphorus (P) or potassium (K), coded as absent (0) or present (1).
+
+*Enter the code to look at the structure of the data.*
+```{r npk-str, exercise = TRUE}
+
+```
+```{r npk-str-hint}
+The function is str
+```
+
+```{r question1, echo = FALSE}
+quiz(caption = "How well do you understand the data?",
+     question_text(
+       "Ignoring block and if yield is the response variable, how many predictor variables are there?",
+       answer("3", correct = TRUE),
+       allow_retry = TRUE
+     )
+)
+```
+
+Let's look at the full model:
+
+```{r npk-full, echo=TRUE}
+summary(lm(yield ~ N * P * K, npk))
+```
+
+Now we have a multiple linear regression with three predictor variables! We have a lot of $\beta$ coefficients describing their independent additive effects on plot yield, the pairwise combination of each predictor, as well as the interaction between all three variables (`N1:P1:K1`).
+
+Don't worry! The interpretation of these coefficients is *exactly* the same as with two predictor variables. In fact, it doesn't matter how many predictor variables there are or whether they are continuous or categorical, the interpretation is the same.
+
+Importantly, we can look at the one sample t-test and start evaluating whether we can drop coefficients to find the most parsimonious model.
+
+Remember we need to drop the terms in order of complexity and in reverse order they are entered into the model:
+
+```{r dropping}
+quiz(
+question_radio("Based on the one sample t-test on the three-way interaction, can we drop this term?",
+                  answer("Yes", correct = TRUE, message = "It's not significant"),
+                  answer("No"),
+                  allow_retry = TRUE,
+                  random_answer_order = TRUE
+)
+)
+```
+
+### Dropping the three-way interaction
+
+A quick way of removing a single interaction from a linear model is to include `- term` into the `lm` function. 
+
+In fact, `lm(Y ~ X1 * X2, data)` is the shorthand way of writing the full formula `lm(Y ~ X1 + X2 + X1:X2, data)` where `X1:X2` is the interaction term because `*` means "all possible combinations" (a factorial cross to use the technical term). Either way gives the same output in `R`.
+
+Thus writing `lm(Y ~ X1 + X2 + X1:X2 - X1:X2, data)` to remove the interaction is the same as the additive model `lm(Y ~ X1 + X2, data)`, but is also pretty redundant coding.
+
+```{r tests-npk}
+question("Which of these functions will do the linear regression `lm(yield ~ N * P * K, npk)` we did above but without the three-way interaction ?",
+                  answer("`lm(yield ~ N * P * K - N:P:K, npk)`", correct = TRUE),
+                  answer("`lm(yield ~ N * P * K - N:P, npk)`"),
+                  answer("`lm(yield ~ N * P * K - N:K, npk)`"),
+                  answer("`lm(yield ~ N * P * K - P:K, npk)`"),
+                  allow_retry = TRUE,
+                  random_answer_order = TRUE,
+         incorrect = "What is the term for the three-way interaction?"
+)
+```
+
+*Now fix the code below to look at the summary of the reduced model without the three way interaction.*
+```{r npk-reduced, exercise = TRUE}
+yield ~ N * P * K, npk
+```
+
+Look at the P values on t-test of the two-way interactions. Are any of them significant?
+
+Only the intercept $\beta_0$ and the independent effect of Nitrogen $\beta_1$ is significant. None of the other interactions are.
+
+```{r dropping2}
+question_checkbox("What does the summary tell us about this reduced model? Select all that apply.",
+                  answer("We can drop the two-way interactions", correct = TRUE, message = "None of them are significant"),
+                  answer("We cannot drop the-two way interactions"),
+                  answer("The full model is more parsimonious"),
+                  answer("The additive model is more parsimonious", correct = TRUE),
+                  allow_retry = TRUE,
+                  random_answer_order = TRUE
+)
+```
+
+### Dropping the two way interactions
+
+In the end, none of the interactions explain significant amounts of variation so we can drop *all* interactions from the model. We are then left with the additive model.
+
+*Change the full model below to look at the summary of the additive model.*
+```{r npk-add, exercise = TRUE}
+summary(lm(yield ~ N * P * K, npk))
+```
+```{r npk-add-hint}
+Should the * be * or something else?
+```
+
+Now we have four coefficients describing the independent and additive effect of each nutrient on the yield of plants. Do any of them explain significant amounts of variation in the model?
+
+```{r dropping3}
+question_checkbox("Which coefficients must we keep?",
+                  answer("$\\beta_0$", correct = TRUE),
+                  answer("$\\beta_1$", correct = TRUE),
+                  answer("$\\beta_2$"),
+                  answer("$\\beta_3$"),
+                  allow_retry = TRUE,
+                  random_answer_order = TRUE
+)
+```
+
+### Dropping predictor variables
+
+We can conclude that there is no effect of Phosphorous or Potassium on the yield of plants. We can certainly remove Potassium as a predictor variable. Now we have two predictor variables: Nitrogen and Phosphorous.
+
+The variation that was attributed to Potassium then becomes unexplained or residual variation.
+
+*Get the summary of an additive model with only Nitrogen and Phosphorous as predictor variables*
+```{r npk-two, exercise = TRUE}
+
+```
+
+```{r dropping4}
+question_radio("Based on the one sample t-test, can we drop Phosphorous as a predictor variable from the model?",
+                  answer("Yes", correct = TRUE, message = "It's not significant"),
+                  answer("No"),
+                  allow_retry = TRUE,
+                  random_answer_order = TRUE
+)
+```
+
+### The final model for `npk`
+
+We've effectively reduced our model from a multiple regression with three predictor variables to a simple regression with one predictor variable: Nitrogen!
+
+Now when we run the model, both the interaction and the slope for the effect of Nitrogen is significant.
+
+```{r npk-final, echo = TRUE}
+summary(lm(yield ~ N, npk))
+```
+
+We could do the exact same process by evaluating the F statistic in the ANOVA table. In fact, as `N`, `P` and `K` were all categorical predictors, it would have made more sense to do so but we would have come to the same conclusion. 
+
+*Get the ANOVA table for our final model and answer the question below.*
+```{r anova-npk, exercise = TRUE}
+
+```
+```{r anova-npk-hint}
+The function to see the anova table on a linear regression is anova(lm())
+```
+
+
+```{r anova}
+question_text(
+  "What are the degrees of freedom for residual variation?",
+  answer("22", correct = TRUE),
+  allow_retry = TRUE
+)
+```
+***
+
+## Analysis of Deviance
+
+Analysis of Deviance is a formal test of comparing how much variation is explained in two models. It is used to test the effect of dropping variables, such as comparing models with and without a second predictor variable.
+
+For example:
+    
+```
+two_pred <- lm(Y ~ X1 + X2, data) # Full model
+one_pred <- lm(Y ~ X1, data) # Reduced model
+anova(two_pred, one_pred, test = "Chisq")
+```
+
+The hypotheses are:
+
+H0: No difference between models - pick reduced model  
+H1: Additional term explains significant variation - pick full model
+
+Here's an example comparing a full and a additive model:
+
+```{r survey-dev, echo=TRUE}
+mod_int <- lm(Height ~ Wr.Hnd * Sex, survey)
+mod_add <- lm(Height ~ Wr.Hnd + Sex, survey)
+anova(mod_int, mod_add, test = "Chisq")
+```
+
+```{r deviance}
+question_radio("Based on the Analysis of Deviance table above, is the full or reduced model more parsimonious?",
+                  answer("Reduced", correct = TRUE),
+                  answer("Full"),
+                  allow_retry = TRUE,
+                  random_answer_order = TRUE
+)
+```
+
+***
+
+## Collinearity
+
+ > **Collinearity**: Predictor variables are strongly influenced by each other
+ 
+Collinearity affects the coefficient estimation process when the effect of one predictor variable on $Y$ is estimated by holding all other predictors constant. If predictors co-vary, then they are not independent of each other and the value of one predictor will change with the other predictor. Thus, these variables will violate the assumption of **independence** in linear regression and the estimation process will be less accurate. 
+
+It may also be harder to interpret your coefficients and their statistical tests. For example, is $R^2$ suspiciously high but predictors are not significant?
+
+ > If variables are highly correlated, then our P values on the one-sample t-test may not be indicative of the coefficients *true* predictive power
+
+We can visualise collinearity by checking the correlation between all pairs of predictors. `pairs` will show this.
+
+But collinearity doesn't affect the ability of the model to make predictions.
+
+Here's an example with the dataset `survey` showing there is a strong correlation between the span of students' writing hand (`Wr.Hnd`) and the span of their other hand (`NW.Hnd`):
+```{r colin}
+pairs(survey[,c(2,3,6, 10, 12)])
+```
+
+***
+
+## Summary
+
+That's the fundamentals of model selection by dropping variables based on the one sample t-test and **parsimony**. More advanced methods of comparing and selecting models also depend on parsimony but use other metrics of assessing explained variation.
+
+ > The best model depends on the intended use and your question.
+
+Generally, adding more predictors will increase the Coefficient of Determination, $R^2$ value, which is why $R^2$ is not a good measure for model selection. 
+
+The caveat here is that dropping variables solely based on the one sample t-test is that you risk losing explanatory power from dropped predictors that are potentially masked or hidden by the other predictors.
+
+ > Don't trust P-values to select the best model.
