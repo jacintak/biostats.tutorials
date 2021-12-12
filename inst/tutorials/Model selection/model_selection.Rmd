@@ -19,7 +19,13 @@ tutorial_options(exercise.completion = FALSE)
 
 This tutorial will look at how to choose the best statistical model for your data, focussing on multiple linear regressions with two predictor variables and one continuous response variable.
 
-**The tutorial assumes that you know how to do simple and multiple linear regressions in R using `lm` and basic plotting**. If not, revise these concepts or try another tutorial first.
+<div class="panel panel-warning">
+  <div class="panel-heading">
+<h3 class="panel-title">Warning!</h3>
+  </div>
+  <div class="panel-body">
+The tutorial assumes that you know how to do simple and multiple linear regressions in R using `lm` and basic plotting. If not, revise these concepts or try another tutorial first. </div>
+</div>
 
  > The aim of statistical modelling is to find a model that best describes your data
  
@@ -45,7 +51,13 @@ We can describe models by how many terms ($\beta$) they have. Look at these thre
 
 They all have different number of $\beta$ coefficients, thus they provide different descriptions of variation in $Y$. 
 
-> $\beta$ coefficients describe the **additional** variation attributed to each term in the model. Together they describe the cumulative variation explained by the model. In combination with $\varepsilon$, they describe the total variation in $Y$, both explained and unexplained.
+<div class="panel panel-primary">
+  <div class="panel-heading">
+<h3 class="panel-title">Coefficients</h3>
+  </div>
+  <div class="panel-body">
+$\beta$ coefficients describe the **additional** variation attributed to each term in the model. In sequence, they describe the cumulative variation explained by the model. In combination with $\varepsilon$, they describe the total variation in $Y$, both explained and unexplained. </div>
+</div>
 
 The first model has two predictor variables $X_1$ and $X_2$ and their respective coefficients $\beta_1$ and $\beta_2$ describe the *additive* effect of each predictor variable relative to the **grand intercept** $\beta_0$. The fourth term $\beta_3$ describes the additional effect of the interaction between $X_1$ and $X_2$. In other words, how much $X_1$ and $X_2$ influence each other's effect on $Y$.
 
@@ -96,12 +108,13 @@ How do we evaluate how much variation is explained by each coefficient? A statis
 
 ```{r tests}
 question("Which of these statistical tests would test whether the additional variation explained is significantly different to 0?",
-                  answer("One sample t test", correct = TRUE),
-                  answer("Analysis of Variance"),
-                  answer("Two sample t test"),
-                  answer("Paired t test"),
-                  allow_retry = TRUE,
-                  random_answer_order = TRUE
+         answer("One sample t test", correct = TRUE, message = random_praise()),
+         answer("Analysis of Variance"),
+         answer("Two sample t test"),
+         answer("Paired t test"),
+         allow_retry = TRUE,
+         random_answer_order = TRUE,
+         incorrect = random_encouragement()
 )
 ```
 
@@ -200,7 +213,7 @@ question_radio("Based on the one sample t-test on the interaction, is the reduce
 )
 ```
 
-## `cats` conclusion
+### `cats` conclusion
 
 Since the interaction was significant, the interaction becomes the main conclusion of our analyses and the full model is the most parsimonious model. 
 
@@ -255,7 +268,7 @@ question_radio("Based on the one sample t-test on the interaction, is the reduce
 )
 ```
 
-## Checking the additive model
+### Checking the additive model
 
 OK! The interaction is not significant so we can drop the interaction term $\beta_3$.
 
@@ -288,8 +301,8 @@ question_radio("Based on the summary of the additive model, can we reduce the mo
 
 In this case, the additive model is the most parsimonious. The model is:
 
-$$ Vitamin C = \beta_0 + \beta_1 Weight + \beta_2 Cultivar + \varepsilon $$
-$$ Vitamin C = 67.93 - 5.65 Weight + 9.36 Cultivar + \varepsilon $$
+$$ Vitamin \space C = \beta_0 + \beta_1 Weight + \beta_2 Cultivar + \varepsilon $$
+$$ Vitamin \space C = 67.93 - 5.65 Weight + 9.36 Cultivar + \varepsilon $$
 
 Let's plot the additive model and the regression line.
 
@@ -338,7 +351,11 @@ legend(x = "topleft", bty = "n", legend = c("c39", "c52"), col = c("purple", "da
 
 There's a negative relationship between the size of the cabbage and the Vitamin C content.
 
- > Eat your greens
+<div class="panel panel-danger">
+  <div class="panel-heading">
+<h3 class="panel-title">Eat your greens!</h3>
+  </div>
+</div>
  
 Let's try a final example of dropping a predictor variable.
 
@@ -360,8 +377,9 @@ The function is str
 quiz(caption = "How well do you understand the data?",
      question_text(
        "Ignoring block and if yield is the response variable, how many predictor variables are there?",
-       answer("3", correct = TRUE),
-       allow_retry = TRUE
+       answer("3", correct = TRUE, message = random_praise()),
+       allow_retry = TRUE,
+       incorrect = random_encouragement()
      )
 )
 ```
@@ -381,13 +399,12 @@ Importantly, we can look at the one sample t-test and start evaluating whether w
 Remember we need to drop the terms in order of complexity and in reverse order they are entered into the model:
 
 ```{r dropping}
-quiz(
 question_radio("Based on the one sample t-test on the three-way interaction, can we drop this term?",
-                  answer("Yes", correct = TRUE, message = "It's not significant"),
-                  answer("No"),
-                  allow_retry = TRUE,
-                  random_answer_order = TRUE
-)
+               answer("Yes", correct = TRUE, message = "It's not significant"),
+               answer("No"),
+               allow_retry = TRUE,
+               random_answer_order = TRUE,
+               incorrect = random_encouragement()
 )
 ```
 
@@ -401,12 +418,12 @@ Thus writing `lm(Y ~ X1 + X2 + X1:X2 - X1:X2, data)` to remove the interaction i
 
 ```{r tests-npk}
 question("Which of these functions will do the linear regression `lm(yield ~ N * P * K, npk)` we did above but without the three-way interaction ?",
-                  answer("`lm(yield ~ N * P * K - N:P:K, npk)`", correct = TRUE),
-                  answer("`lm(yield ~ N * P * K - N:P, npk)`"),
-                  answer("`lm(yield ~ N * P * K - N:K, npk)`"),
-                  answer("`lm(yield ~ N * P * K - P:K, npk)`"),
-                  allow_retry = TRUE,
-                  random_answer_order = TRUE,
+         answer("`lm(yield ~ N * P * K - N:P:K, npk)`", correct = TRUE, message = random_praise()),
+         answer("`lm(yield ~ N * P * K - N:P, npk)`"),
+         answer("`lm(yield ~ N * P * K - N:K, npk)`"),
+         answer("`lm(yield ~ N * P * K - P:K, npk)`"),
+         allow_retry = TRUE,
+         random_answer_order = TRUE,
          incorrect = "What is the term for the three-way interaction?"
 )
 ```
@@ -427,7 +444,8 @@ question_checkbox("What does the summary tell us about this reduced model? Selec
                   answer("The full model is more parsimonious"),
                   answer("The additive model is more parsimonious", correct = TRUE),
                   allow_retry = TRUE,
-                  random_answer_order = TRUE
+                  random_answer_order = TRUE,
+                  incorrect = random_encouragement()
 )
 ```
 
@@ -452,7 +470,8 @@ question_checkbox("Which coefficients must we keep?",
                   answer("$\\beta_2$"),
                   answer("$\\beta_3$"),
                   allow_retry = TRUE,
-                  random_answer_order = TRUE
+                  random_answer_order = TRUE,
+                  incorrect = random_encouragement()
 )
 ```
 
@@ -469,10 +488,11 @@ The variation that was attributed to Potassium then becomes unexplained or resid
 
 ```{r dropping4}
 question_radio("Based on the one sample t-test, can we drop Phosphorous as a predictor variable from the model?",
-                  answer("Yes", correct = TRUE, message = "It's not significant"),
-                  answer("No"),
-                  allow_retry = TRUE,
-                  random_answer_order = TRUE
+               answer("Yes", correct = TRUE, message = "It's not significant"),
+               answer("No"),
+               allow_retry = TRUE,
+               random_answer_order = TRUE,
+               incorrect = random_encouragement()
 )
 ```
 
@@ -500,8 +520,9 @@ The function to see the anova table on a linear regression is anova(lm())
 ```{r anova}
 question_text(
   "What are the degrees of freedom for residual variation?",
-  answer("22", correct = TRUE),
-  allow_retry = TRUE
+  answer("22", correct = TRUE, message = random_praise()),
+  allow_retry = TRUE,
+  incorrect = random_encouragement()
 )
 ```
 ***
@@ -523,7 +544,7 @@ The hypotheses are:
 H0: No difference between models - pick reduced model  
 H1: Additional term explains significant variation - pick full model
 
-Here's an example comparing a full and a additive model:
+Here's an example comparing a full and an additive model:
 
 ```{r survey-dev, echo=TRUE}
 mod_int <- lm(Height ~ Wr.Hnd * Sex, survey)
@@ -533,10 +554,11 @@ anova(mod_int, mod_add, test = "Chisq")
 
 ```{r deviance}
 question_radio("Based on the Analysis of Deviance table above, is the full or reduced model more parsimonious?",
-                  answer("Reduced", correct = TRUE),
-                  answer("Full"),
-                  allow_retry = TRUE,
-                  random_answer_order = TRUE
+               answer("Reduced", correct = TRUE, message = random_praise()),
+               answer("Full"),
+               allow_retry = TRUE,
+               random_answer_order = TRUE,
+               incorrect = random_encouragement()
 )
 ```
 
@@ -550,7 +572,13 @@ Collinearity affects the coefficient estimation process when the effect of one p
 
 It may also be harder to interpret your coefficients and their statistical tests. For example, is $R^2$ suspiciously high but predictors are not significant?
 
- > If variables are highly correlated, then our P values on the one-sample t-test may not be indicative of the coefficients *true* predictive power
+<div class="panel panel-primary">
+  <div class="panel-heading">
+<h3 class="panel-title">Info!</h3>
+  </div>
+  <div class="panel-body">
+If variables are highly correlated, then our P values on the one-sample t-test may not be indicative of the coefficients *true* predictive power. </div>
+</div>
 
 We can visualise collinearity by checking the correlation between all pairs of predictors. `pairs` will show this.
 

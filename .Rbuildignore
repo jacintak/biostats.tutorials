@@ -1,3 +1,5 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 drafts/
+inst/*/*/*.html
+inst/*/*/*_files/

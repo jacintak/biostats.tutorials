@@ -1,10 +1,10 @@
 Package: biostats.tutorials
 Type: Package
 Title: Biostatistics in R
-Version: 0.1.0
+Version: 0.3.0
 Author: Jacinta Kong
 Maintainer: Jacinta Kong <kongj@tcd.ie>
-Description: A series of learnr tutorials introducting statistics and computation in R.
+Description: A series of learnr tutorials on statistics and computation in R.
 License: CC0
 Encoding: UTF-8
 LazyData: true

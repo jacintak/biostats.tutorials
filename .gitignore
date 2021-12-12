@@ -2,5 +2,13 @@
 .Rhistory
 .RData
 .Ruserdata
-*.Rproj
 drafts/
+inst/*/*/*.html
+inst/*/*/*_files/
+^.*\.Rproj$
+^\.Rproj\.user$
+.gitignore
+.Rbuildignore
+*.Rproj
+
+

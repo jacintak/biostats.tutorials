@@ -1,5 +1,6 @@
 ---
 title: "Simple linear regression"
+subtitle: "Is there a relationship between the width and length of a crab shell?"
 output: 
   learnr::tutorial:
     theme: readable
@@ -22,12 +23,12 @@ This tutorial will look at simple linear regressions with one continuous predict
 
 We will:
 
- 1. Conduct a linear regression on biological data in R to derive a parameterised linear model
- 2. Use a parameterised linear model to predict new values
- 3. Use output from linear regressions in R to evaluate hypotheses
- 4. Look at how to report the results of a linear regression
-     * In a figure
-     * In text
+1. Conduct a linear regression on biological data in R to derive a parameterised linear model
+2. Use a parameterised linear model to predict new values
+3. Use output from linear regressions in R to evaluate hypotheses
+4. Look at how to report the results of a linear regression
+* In a figure
+* In text
 
 ## Crabs
 <p align="center">
@@ -48,28 +49,32 @@ We should also look at the help file for this dataset: `help(crabs)`. We can see
 quiz(caption = "How well do you understand the data?",
      question_text(
        "How many crabs of each combination of species and sex was measured? This is the sample size.",
-       answer("50", correct = TRUE),
-       allow_retry = TRUE
+       answer("50", correct = TRUE, message = random_praise()),
+       allow_retry = TRUE,
+       incorrect = random_encouragement()
      ),
      question_text(
        "How many species were measured?",
-       answer("2", correct = TRUE),
-       allow_retry = TRUE
+       answer("2", correct = TRUE, message = random_praise()),
+       allow_retry = TRUE,
+       incorrect = random_encouragement()
      ),
      question_text(
        "How many sexes of crabs are there?",
-       answer("2", correct = TRUE),
-       allow_retry = TRUE
+       answer("2", correct = TRUE, message = random_praise()),
+       allow_retry = TRUE,
+       incorrect = random_encouragement()
      )
 )
 ```
 
 ### Is there a relationship between the width and length of a crab shell?
+
 There are two variables we will look at to answer the above question:
 
- * CL: Carapace length (mm) - our response variable
- * CW: Carapace width (mm) - our predictor variable
- 
+* CL: Carapace length (mm) - our response variable
+* CW: Carapace width (mm) - our predictor variable
+
 Both of these variables are numeric and continuous, which makes a linear regression suitable to assess their linear relationship.
 
 The code we use here can be applied to any dataset. You can try it with any biological system of your choice in your own time. For example, `airquality` has environmental data or the Penguins [dataset](https://towardsdatascience.com/penguins-dataset-overview-iris-alternative-9453bb8c8d95) about penguins can be downloaded as a package.
@@ -86,55 +91,63 @@ The mathematical expression for the regression line (blue) is:
 $$CL = \beta_0 + \beta_1 CW$$
 ```{r slope}
 quiz(caption = "You should be familiar with what the symbols mean:",
-  question(
-  "What does $\\beta_1$ represent?",
-  answer("response variable"),
-  answer("slope", correct = TRUE),
-  answer("predictor variable"),
-  answer("intercept"),
-  allow_retry = TRUE,
-  random_answer_order = TRUE
-),
-  question(
-  "What does $\\beta_0$ represent?",
-  answer("response variable"),
-  answer("intercept", correct = TRUE),
-  answer("predictor variable"),
-  answer("slope"),
-  allow_retry = TRUE,
-  random_answer_order = TRUE
-))
+     question(
+       "What does $\\beta_1$ represent?",
+       answer("response variable"),
+       answer("slope", correct = TRUE, message = random_praise()),
+       answer("predictor variable"),
+       answer("intercept"),
+       allow_retry = TRUE,
+       incorrect = random_encouragement(),
+       random_answer_order = TRUE
+     ),
+     question(
+       "What does $\\beta_0$ represent?",
+       answer("response variable"),
+       answer("intercept", correct = TRUE, message = random_praise()),
+       answer("predictor variable"),
+       answer("slope"),
+       allow_retry = TRUE,
+       incorrect = random_encouragement(),
+       random_answer_order = TRUE
+     ))
 ```
 
 We need to calculate the values of $\beta_1$ and $\beta_0$ to **parameterise** the model. We could do it by hand for each observation, but that becomes an impossible task for large datasets. That's where R comes in. But first we need to formulate our hypotheses!
 
 ***
 
-## Is there a relationship between the width and length of a crab shell?
+## Formulate hypotheses
 
- > Remember: Statistical models represent hypotheses about a biological system
+> Statistical models represent hypotheses about a biological system
 
 To answer our question we need two hypotheses: a null hypothesis we are testing against and an alternative hypothesis we are testing (the effect we want to see).
 
- > Remember: A hypothesis must be testable and must be falsifiable. We do not "prove" hypotheses. We find evidence to support them.
+<div class="panel panel-primary">
+  <div class="panel-heading">
+<h3 class="panel-title">Remember!</h3>
+  </div>
+  <div class="panel-body">
+A hypothesis must be testable and must be falsifiable. We do not "prove" hypotheses. We find evidence to support them. </div>
+</div>
 
 ```{r hypotheses, echo=FALSE}
 quiz(caption = "Hypotheses",
      question("What is our null hypothesis?",
-              answer("There is no relationship between shell length and shell width", correct = TRUE),
+              answer("There is no relationship between shell length and shell width", correct = TRUE, message = random_praise()),
               answer("There is a correlation between shell length and shell width"),
               answer("There is relationship between shell length and shell width"),
               answer("There is no correlation between shell length and shell width"),
-              incorrect = "Incorrect. Correlation is not causation",
+              incorrect = paste(random_encouragement(), "Correlation is not causation."),
               allow_retry = TRUE,
               random_answer_order = TRUE
      ),
      question("What is our alternative hypothesis?",
               answer("There is no relationship between shell length and shell width"),
               answer("There is a correlation between shell length and shell width"),
-              answer("There is relationship between shell length and shell width", correct = TRUE),
+              answer("There is relationship between shell length and shell width", correct = TRUE, message = random_praise()),
               answer("There is no correlation between shell length and shell width"),
-              incorrect = "Incorrect. Correlation is not causation",
+              incorrect = paste(random_encouragement(), "Correlation is not causation."),
               allow_retry = TRUE,
               random_answer_order = TRUE
      )
@@ -146,20 +159,22 @@ Importantly, we want to imply causation in linear regression so a correlation do
 ```{r hypotheses-simple, echo=FALSE}
 quiz(caption = "Hypotheses",
      question_checkbox("What should our linear regression line look like if our data supports the null hypothesis? Select all that apply",
-              answer("The line should be horizontally flat", correct = TRUE),
-              answer("The line should have a slope of 0", correct = TRUE),
-              answer("The line should go diagonally up"),
-              answer("The line should go diagonally down"),
-              allow_retry = TRUE,
-              random_answer_order = TRUE
+                       answer("The line should be horizontally flat", correct = TRUE),
+                       answer("The line should have a slope of 0", correct = TRUE),
+                       answer("The line should go diagonally up"),
+                       answer("The line should go diagonally down"),
+                       allow_retry = TRUE,
+                       incorrect = random_encouragement(),
+                       random_answer_order = TRUE
      ),
      question_checkbox("What should our linear regression line look like if our data supports the alternative hypothesis? Select all that apply",
-              answer("The line should not have a slope of 0", correct = TRUE),
-              answer("The line should have a slope of 0"),
-              answer("The line should go diagonally up", correct = TRUE),
-              answer("The line should go diagonally down", correct = TRUE),
-              allow_retry = TRUE,
-              random_answer_order = TRUE
+                       answer("The line should not have a slope of 0", correct = TRUE),
+                       answer("The line should have a slope of 0"),
+                       answer("The line should go diagonally up", correct = TRUE),
+                       answer("The line should go diagonally down", correct = TRUE),
+                       allow_retry = TRUE,
+                       incorrect = random_encouragement(),
+                       random_answer_order = TRUE
      )
 )
 ```
@@ -207,41 +222,42 @@ It should tell us two things:
 ```{r coef-cals}
 quiz(caption = "Answer the following questions:",
      question("How are these coefficients calculated?",
-              answer("Ordinary least squares regression", correct = TRUE),
+              answer("Ordinary least squares regression", correct = TRUE, message = random_praise()),
               answer("Ordinary most squares regression"),
               answer("Random regression"),
               answer("Random squared regression"),
-              incorrect = "Incorrect. Remember back to the lecture on how linear regressions are parameterised",
               allow_retry = TRUE,
+              incorrect = random_encouragement(),
               random_answer_order = TRUE
      ),
      question("The value for the slope is positive. What does that mean?",
-       answer("As crab shell width increases, crab shell length decreases"),
-       answer("As crab shell width increases, crab shell length increases", correct = TRUE),
-       answer("As crab shell width increases, crab shell length stays the same"),
-       allow_retry = TRUE
+              answer("As crab shell width increases, crab shell length decreases"),
+              answer("As crab shell width increases, crab shell length increases", correct = TRUE, message = random_praise()),
+              answer("As crab shell width increases, crab shell length stays the same"),
+              allow_retry = TRUE,
+              incorrect = random_encouragement()
      )
 )
 ```
 
-
-Linear regressions are always done on the entire data, not on averages. i.e. you wouldn't use the average of your replicates for each treatment for the underlying data. To fit a line to data, ordinary least squares regression depends on quantifying *variation* of observations around the mean (think back to how sampled data from a population is distributed). Averaging data removes that variation and thus there is less information for `R` to use (fewer degrees of freedom).
+Linear regressions are always done on the entire data, not on averages, i.e. you wouldn't average the data across your replicates first *before* fitting the model. To fit a line to data, ordinary least squares regression depends on quantifying *variation* of observations around the mean (think back to how sampled data from a population is distributed). Averaging data removes that variation and thus there is less information for `R` to use when parameterising (fewer degrees of freedom).
 
 ***
 
 ### Parameterising our model
 
-Now we have all the information to parameterise our linear model $CL = \beta_0 + \beta_1 CW$. We can simply replace the unknown values of $\beta_0$ and $\beta_1$ with the estimated values.  
+Now we have all the information to parameterise our linear model $CL = \beta_0 + \beta_1 CW$. We can simply replace the unknown values of $\beta_0$ and $\beta_1$ with the estimated values we get from `lm`.  
 Using the `crabs` linear model R output:
 
 ```{r param-simple, echo=FALSE}
 coef <- round(crabs_lm$coefficients, 1)
 question("What is our parameterised model?",
-         answer(paste0("CL = ", coef[1], " + ", coef[2], "CW"), correct = TRUE),
+         answer(paste0("CL = ", coef[1], " + ", coef[2], "CW"), correct = TRUE, message = random_praise()),
          answer(paste0("CL = ", coef[1], " - ", coef[2], "CW")),
          answer(paste0("CL = ", coef[2], " + ", coef[1], "CW")),
          answer(paste0("CL = ", coef[2], "CW")),
          allow_retry = TRUE,
+         incorrect = paste(random_encouragement(), "You have all the information you need already."),
          random_answer_order = TRUE
 )
 ```
@@ -259,6 +275,14 @@ We can also change the aesthetics of the figure to make it easier to read. Here 
  * `pch` is the symbol type. `1` is an open circle, the default. `16` is a filled in circle. Other numbers will give other symbols.
  * `bty` is the border of the plot. `"o"` is default and will plot a box around the plot. `"l"` (lowercase L) will plot only the bottom and right axes.
  * `col` is the colour of the points. `1` is black (default). You can use numbers (1:7) to refer to the default colour palette or you can use colour names (e.g. `"red"` or `"blue"`)
+ 
+<div class="panel panel-primary">
+  <div class="panel-heading">
+<h3 class="panel-title">Info!</h3>
+  </div>
+  <div class="panel-body">
+Options within an R function are called **Arguments**. You can see a list of arguments for a function in its help file. </div>
+</div>
 
 *Change the general plot formula below to plot the `crabs` dataset using filled circles and only the bottom and right axes. You can pick any colour you want*
 ```{r plot2, exercise=TRUE, fig.cap= "Graph of carapace length against carapace width of crabs"}
@@ -269,13 +293,27 @@ plot(Y ~ X, data, pch = 1, bty = "o", col = "black")
 
 Let's add the regression line to the above plot. We need to plot the graph and run an additional line of code that plots a straight line
 
-> The formula to plot a straight line is `abline(intercept, slope)` because it plots a line from a to b. The intercept is the first value, the slope is the second value.
+<div class="panel panel-primary">
+  <div class="panel-heading">
+<h3 class="panel-title">Info!</h3>
+  </div>
+  <div class="panel-body">
+The formula to plot a straight line is `abline(a = intercept, b = slope)` because it plots a line from a to b. The intercept is the first argument, the slope is the second argument.</div>
+</div>
 
 You can also change the aesthetic of the regression line:
 
  * `col` will change the colour
  * `lwd` will change the line width (default is `1`). Accepts numbers
  * `lty` will change the line type (default is `1`, a solid line). Accepts numbers
+
+<div class="panel panel-primary">
+  <div class="panel-heading">
+<h3 class="panel-title">Info!</h3>
+  </div>
+  <div class="panel-body">
+Default inputs do not need to be specified. I.e. if you want to plot a black line, then as a shortcut you do not need to include `col = 1`. But writing the full code may help you remember what you want to code. </div>
+</div>
 
 Here are the coefficients again for the intercept and slope respectively: `r crabs_lm$coefficients`
 
@@ -320,8 +358,9 @@ Let's try an example using the coefficients above (to 1 decimal place):
 ans <- round(crabs_lm$coefficients[1],1) + round(crabs_lm$coefficients[2]*30, 1)
 question_text(
   "What is the length of a crab with a width of 30 mm? To 1 decimal place",
-  answer(paste(ans), correct = TRUE),
-  allow_retry = TRUE
+  answer(paste(ans), correct = TRUE, message = random_praise()),
+  allow_retry = TRUE,
+  incorrect = random_encouragement()
 )
 ```
 
@@ -331,8 +370,9 @@ shell_width <- sample(seq(1:50), 1)
 ans <- round(crabs_lm$coefficients[1], 1) + round(crabs_lm$coefficients[2]*shell_width, 1)
 question_text(
   paste("What is the length of a crab with a shell width of ", shell_width, " mm? To 1 decimal place"),
-  answer(paste(ans), correct = TRUE),
-  allow_retry = TRUE
+  answer(paste(ans), correct = TRUE, message = random_praise()),
+  allow_retry = TRUE,
+  incorrect = random_encouragement()
 )
 ```
 
@@ -356,6 +396,7 @@ question("Which regression line is our null hypothesis?",
          answer("Blue"),
          answer("Green"),
          allow_retry = TRUE,
+         incorrect = random_encouragement(),
          random_answer_order = TRUE
 )
 ```
@@ -381,7 +422,13 @@ We've already done it with our `lm(CL ~ CW, crabs)` code.
 
 We get a slope of `r round(coef(crabs_lm)[2],1)`. **But is this enough evidence for us to accept/reject hypotheses?** No. What if the slope is not 0 because of random chance? We need to be confident that our estimated slope is *significantly different* to 0. How do we do that?
 
-> Statistical significance is not the same thing as biological significance. A relationship between two purely randomly generated numbers can be statstically significant but have no biological meaning! Language matters when presenting results.
+<div class="panel panel-warning">
+  <div class="panel-heading">
+<h3 class="panel-title">Warning!</h3>
+  </div>
+  <div class="panel-body">
+Statistical significance is not the same thing as biological significance. A relationship between two purely randomly generated numbers can be statstically significant but have no biological meaning! Language matters when presenting results. </div>
+</div>
 
 The predicted slope of the line for the null hypothesis can be considered a *known* population level value.  
 Our observed slope of the line from empirical data can be considered an estimated/observed population value.  
@@ -390,12 +437,13 @@ We need a statistical test of comparing an observed population value to the know
 
 ```{r tests}
 question("Which of these statistical tests you've already learnt in this module would test whether our observed slope is significantly different to 0?",
-                  answer("One sample t test", correct = TRUE),
-                  answer("Analysis of Variance"),
-                  answer("Two sample t test"),
-                  answer("Paired t test"),
-                  allow_retry = TRUE,
-                  random_answer_order = TRUE
+         answer("One sample t test", correct = TRUE, message = random_praise()),
+         answer("Analysis of Variance"),
+         answer("Two sample t test"),
+         answer("Paired t test"),
+         allow_retry = TRUE,
+         incorrect = random_encouragement(),
+         random_answer_order = TRUE
 )
 ```
 
@@ -414,8 +462,8 @@ lm is nested within summary
 ```
 ```{r summary-hint-2}
 Have you missed a bracket?
-```
-```{r summary-solution}
+  ```
+  ```{r summary-solution}
 summary(lm(CL ~ CW, crabs))
 ```
 
@@ -430,7 +478,7 @@ Look at the P-value column in the `summary` above. There are two P values - one 
 
  * H0: The coefficient estimate is equal to 0
  * H1: The coefficient estimate is not equal to 0
- 
+
 We can use the test on the slope (`CW`) to test our main hypotheses:
 
  * If we accept the null hypothesis on the one sample t-test, then we are concluding that the slope of our line is 0 and that there is no relationship between shell length and width - our null hypothesis
@@ -438,18 +486,20 @@ We can use the test on the slope (`CW`) to test our main hypotheses:
 
 ```{r conclusion}
 quiz(
-question_radio("Based on the one sample t-test on the slope, do we reject or accept the null hypothesis that the coefficient estimate is equal to 0?",
-                  answer("Reject", correct = TRUE),
-                  answer("Accept"),
-                  allow_retry = TRUE,
-                  random_answer_order = TRUE
-),
-question_radio("Thus, based on the one sample t-test on the slope, do we reject or accept the alternative hypothesis that there is a relationship between shell length and width?",
-                  answer("Reject"),
-                  answer("Accept", correct = TRUE),
-                  allow_retry = TRUE,
-                  random_answer_order = TRUE
-)
+  question_radio("Based on the one sample t-test on the slope, do we reject or accept the null hypothesis that the coefficient estimate is equal to 0?",
+                 answer("Reject", correct = TRUE, message = random_praise()),
+                 answer("Accept"),
+                 allow_retry = TRUE,
+                 incorrect = random_encouragement(),
+                 random_answer_order = TRUE
+  ),
+  question_radio("Thus, based on the one sample t-test on the slope, do we reject or accept the alternative hypothesis that there is a relationship between shell length and width?",
+                 answer("Reject"),
+                 answer("Accept", correct = TRUE, message = random_praise()),
+                 allow_retry = TRUE,
+                 incorrect = random_encouragement(),
+                 random_answer_order = TRUE
+  )
 )
 ```
 
@@ -474,15 +524,15 @@ The final step is to communicate our statistical analysis in words. `R` output o
 
 We need to communicate our general conclusions, our main results and some detail about the statistical test:
 
- * Whether you accept or reject your hypotheses
- * The main trends in the data
-     * The parameterised linear regression equation
- * The statistical analysis
-     * The name of the test (linear regression)
-     * The t value of the one sample t-test
-     * The P value of the t-test
-     * The degrees of freedom of the test: You can see this at the bottom text of summary (`Residual standard error`). This is usually reported as a subscript of the t statistic 
-     
+* Whether you accept or reject your hypotheses
+* The main trends in the data
+* The parameterised linear regression equation
+* The statistical analysis
+* The name of the test (linear regression)
+* The t value of the one sample t-test
+* The P value of the t-test
+* The degrees of freedom of the test: You can see this at the bottom text of summary (`Residual standard error`). This is usually reported as a subscript of the t statistic 
+
 Here's an example of how to put the linear regression on the `crabs` dataset into a sentence:
 
 There is a positive relationship between shell length and shell width (linear regression, $t_{198}$ = 140.5, P < 0.001).
@@ -493,16 +543,20 @@ You can compare these numbers with the `summary` of the linear regression:
 summary(crabs_lm)
 ```
 
-I did not use the word "significant" in the sentence because that is already implied by the significant P value is already.
+I did not use the word "significant" in the sentence because that is already implied by the significant P value.
 
-Other considerations:
-
+<div class="panel panel-primary">
+  <div class="panel-heading">
+<h3 class="panel-title">Other considerations</h3>
+  </div>
+  <div class="panel-body">
  * Do not report the P value on its own - P values have little meaning without the rest of the information about the statistical test
- * Summarise really small P values (e.g. P < 0.01) rather than writing out really small numbers with many decimal places. Don't use scientific notation.
+ * Summarise really small P values (e.g. P < 0.01) rather than writing out really small numbers with many decimal places. Don't use scientific notation. </div>
+</div>
 
 ***
 
-## Summary: Example lab report
+## Example results paragraph
 
 We investigated whether there a relationship between the width and length of a crab shell. We found there is a positive relationship between shell length and shell width (linear regression, $t_{198}$ = 140.5, P < 0.001), supporting our alternative hypothesis, and we reject the null hypothesis that there is no relationship between shell length and shell width. The relationship between shell length and shell width can be described by the linear model 
 $CL =$ `r round(coef(crabs_lm)[1],1)`  + `r round(coef(crabs_lm)[2],1)` $\times CW$ (Figure 1).
@@ -518,25 +572,41 @@ You now know how to do simple linear regressions with one predictor variable and
 
 We have:
 
- 1. Conducted a linear regression on biological data in R to derive a parameterised linear model
- 2. Used a parameterised linear model to predict new values
- 3. Used output from linear regressions in R to evaluate hypotheses
- 4. Looked at how to report the results of a linear regression
-     * In a figure
-     * In text
-     
+1. Conducted a linear regression on biological data in R to derive a parameterised linear model
+2. Used a parameterised linear model to predict new values
+3. Used output from linear regressions in R to evaluate hypotheses
+4. Looked at how to report the results of a linear regression
+* In a figure
+* In text
+
 A final recap quiz
 ```{r lm-recap}
 question("Which of these R codes will show you the P value of a one sample t test on the coefficients of a linear regression?",
-                  answer("summary(lm(response ~ predictor, data))", correct = TRUE),
-                  answer("lm(response ~ predictor, data)"),
-                  answer("lm(predictor ~ response, data)"),
-                  answer("summary(lm(predictor ~ response, data))"),
-                  allow_retry = TRUE,
-                  random_answer_order = TRUE
+         answer("summary(lm(response ~ predictor, data))", correct = TRUE, message = random_praise()),
+         answer("lm(response ~ predictor, data)"),
+         answer("lm(predictor ~ response, data)"),
+         answer("summary(lm(predictor ~ response, data))"),
+         allow_retry = TRUE,
+         incorrect = random_encouragement(),
+         random_answer_order = TRUE
 )
 ```
 
+<div class="panel panel-success">
+  <div class="panel-heading">
+<h3 class="panel-title">Shortcut!</h3>
+  </div>
+  <div class="panel-body">
+Since a simple linear regression only has two coefficients, a quick way of plotting the regression line is to call the `lm` function within `abline`.
+
+For example, this is the code to plot the graph above:
+
+```
+plot(CL ~ CW, crabs, pch = 16)
+abline(lm(CL ~ CW, crabs), lwd = 2.5, col = "red")
+```
+`abline` will read the coefficients in the correct order because they are given by `lm` in the order that `abline` needs - Intercept first, then slope! This only works for linear models with one predictor variable. </div>
+</div>
 
 Happy crabby is happy for you!
 ![](https://jacintakongresearch.files.wordpress.com/2020/10/image.png)

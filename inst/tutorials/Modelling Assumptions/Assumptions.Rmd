@@ -130,13 +130,20 @@ question_radio(
   "What would you expect to see if our observations followed a normal distribution?",
   answer("A random scatter of observations"),
   answer("Observations to fall along a straight line at approx a 45 degree angle", correct = TRUE, message = "It should follow a 1:1 relationship"),
-  allow_retry = TRUE
+  allow_retry = TRUE,
+  incorrect = random_encouragement()
 )
 ```
 
 We can add a reference line to the above to help us evaluate how our observations deviate from the expected normal relationship by calling `qqline(data$variable)`. We can make the line red and thicker for fun.
 
-> The thickness of a line in an R plot is changed using `lwd` (line width) & the colour of something in a graph is changed using `col`
+<div class="panel panel-primary">
+  <div class="panel-heading">
+<h3 class="panel-title">Info!</h3>
+  </div>
+  <div class="panel-body">
+The thickness of a line in an R plot is changed using `lwd` (line width) & the colour of something in a graph is changed using `col`</div>
+</div>
 
 Here is the code to plot our Q-Q plot and a reference line. Change the `qqline` function so that we can have a red line that is 2 units thick for fun.
 
@@ -171,7 +178,8 @@ question_radio(
   "From all your lines of evidence, would you conclude that the distribution of chick weights is normal?",
   answer("Yes", correct = TRUE, message = "It looks ok - real data is rarely perfectly normal"),
   answer("No"),
-  allow_retry = TRUE
+  allow_retry = TRUE,
+  incorrect = random_encouragement()
 )
 ```
 
@@ -188,9 +196,10 @@ qqline(rgamma(100, 3, 5)) ## You should be able to see the skewness in the data.
 ```{r quiz-skew}
 question_radio(
   "How would you describe the skew in the above figure?",
-  answer("Right skewed", correct = TRUE),
+  answer("Right skewed", correct = TRUE, message = random_praise()),
   answer("Left skewed"),
-  allow_retry = TRUE
+  allow_retry = TRUE,
+  incorrect = random_encouragement()
 )
 ```
 
@@ -210,7 +219,8 @@ question_radio(
   "What is the main difference between the Q-Q plots of the continuous and discrete data?",
   answer("They are the same"),
   answer("You can see a staircase pattern", correct = TRUE, message = "The clustered groupings in the Q-Q plot show the discrete nature of the observations"),
-  allow_retry = TRUE
+  allow_retry = TRUE,
+  incorrect = random_encouragement()
 )
 ```
 
@@ -222,7 +232,8 @@ question_radio(
   "Would you expect to see a staircase pattern in a Q-Q plot of the number of cases of esophageal cancer in a population?",
   answer("Yes", correct = TRUE, message = "The number of cases - a count - is a discrete variable"),
   answer("No"),
-  allow_retry = TRUE
+  allow_retry = TRUE,
+  incorrect = random_encouragement()
 )
 ```
 
@@ -280,8 +291,14 @@ Some common transformations:
  * $\log_{10}$ or natural log - for positive non-0 numbers
  * Square root, cube root - for positive values including 0
  * Inverse
- 
-When taking logs, 0 or negative values need to be dealt with. For example, by making all values positive.
+
+<div class="panel panel-primary">
+  <div class="panel-heading">
+<h3 class="panel-title">Info!</h3>
+  </div>
+  <div class="panel-body">
+When taking logs, 0 or negative values need to be dealt with. For example, by making all values positive.</div>
+</div>
 
 The `mammals` dataset in the package `MASS` contains body sizes of a range of mammals but body size is very skewed to the right.
 
@@ -291,7 +308,7 @@ qqnorm(mammals$body)
 
 ```{r transquiz}
 question("What does it imply if body size is right skewed?",
-         answer("There are very few heavy mammals", correct = TRUE),
+         answer("There are very few heavy mammals", correct = TRUE, message = random_praise()),
          answer("There are very few light mammals"),
          answer("Most mammals are found on the right"),
          answer("Most mammals are found on the left"),
@@ -363,7 +380,8 @@ question(
   answer("The error bars of standard deviation to be small"),
   answer("The error bars of standard deviation to be large"),
   allow_retry = TRUE,
-  random_answer_order = TRUE
+  random_answer_order = TRUE,
+  incorrect = random_encouragement()
 )
 ```
 
@@ -380,8 +398,9 @@ question_radio(
   "Look at the above graph - does it show homoscedasticity or heteroscedasticity?",
   answer("Heteroscedasticity", correct = TRUE, message = "Here, you can see that group `B` has a higher standard deviation than group `A`. So, we would conclude that there is heteroscedasticity. We do not want heteroscedasticity because it would bias the calculations of variance if we were to do an ANOVA. Remember that ANOVA is a test of variance"),
   answer("Homoscedasticity"),
-    allow_retry = TRUE,
-  random_answer_order = TRUE
+  allow_retry = TRUE,
+  random_answer_order = TRUE,
+  incorrect = random_encouragement()
 )
 ```
 
@@ -399,7 +418,8 @@ question_radio(
   "Look at the above scatterplot - does it show homoscedasticity or heteroscedasticity?",
   answer("Homoscedasticity"),
   answer("Heteroscedasticity", correct = TRUE, message = "Here, you can see that as the value of `x` increases so does the scatter around the trend line in `y`."),
-  allow_retry = TRUE
+  allow_retry = TRUE,
+  incorrect = random_encouragement()
 )
 ```
 
@@ -415,7 +435,8 @@ question(
   answer("Observations to be further from a trend line at low values of X"),
   answer("Observations to closer to a trend line at low values of X"),
   allow_retry = TRUE,
-  random_answer_order = TRUE
+  random_answer_order = TRUE,
+  incorrect = random_encouragement()
 )
 
 ```
@@ -504,7 +525,13 @@ You can use more advanced estimation functions, e.g.`lmer`, `nlme` and (restrict
 
 Outliers can be assessed before fitting a model. For example, using boxplots and the 1.5 $\times$ IQR rule.
 
-*But* outliers need to be evaluated with respect to biological context. Outliers are not inherently bad, they might have some biological meaning. Or they may be typos in the data entry process.
+<div class="panel panel-warning">
+  <div class="panel-heading">
+<h3 class="panel-title">Warning!</h3>
+  </div>
+  <div class="panel-body">
+Outliers need to be evaluated with respect to biological context. Outliers are not inherently bad, they might have some biological meaning. Or they may be typos in the data entry process.</div>
+</div>
 
 The fourth residual plot will show the effect of observations on the model fitting process. There are two ways that this effect is measured:
 
@@ -526,12 +553,19 @@ Here is the residual plot for the mammals dataset. Named points are observations
 plot(mammal_brains, which=c(5))
 ```
 
-We can see that humans are an outlier. That's a known effect - humans have disproportionally large brains for our body size relative to other mammals!  
-This is an example of outliers having biological meaning. We can also see that in the plot of Cook's distance vs observation number:
+We can see that humans have a strong influence on the regression. That's a known effect - humans have disproportionally large brains for our body size relative to other mammals!  This is an example of "outliers" having biological meaning. We can also see that in the plot of Cook's distance vs observation number:
 
 ```{r mammal-outliers2, fig.cap="Humans are an outlier.", echo=TRUE}
 plot(mammal_brains, which=c(4))
 ```
+
+<div class="panel panel-warning">
+  <div class="panel-heading">
+<h3 class="panel-title">Warning!</h3>
+  </div>
+  <div class="panel-body">
+The leverage or influence of a point is not a sure determinant of whether a point is an outlier or not. </div>
+</div>
 
 ***
 
