@@ -7,13 +7,14 @@ classoption: [answers, addpoints] # comment to hide answers
 fontsize: 12pt
 output:
   pdf_document:
+    highlight: NULL
     includes:
       before_body: cover.tex
       in_header: preamble.tex
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, fig.height = 4, fig.width = 4, fig.align = 'center')
+knitr::opts_chunk$set(echo = TRUE, fig.height = 4, fig.width = 4, fig.align = 'center')
 ```
 \BQ
 
