@@ -1,0 +1,4 @@
+name: Exam Template
+description: >
+   A laTex exam template using {exam} with R chunks
+create_dir: FALSE

@@ -1,0 +1,12 @@
+% define questions and solutions and parts
+\newcommand{\BQ}{\begin{questions}}
+\newcommand{\EQ}{\end{questions}}
+
+\newcommand{\BS}{\begin{solution}}
+\newcommand{\ES}{\end{solution}}
+
+\newcommand{\BP}{\begin{parts}}
+\newcommand{\EP}{\end{parts}}
+
+% pandoc does not understand parts. Must use {} in markdown
+\renewcommand{\part}[1][]{\oldpart[1]{}}

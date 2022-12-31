@@ -1,0 +1,53 @@
+---
+title: "Class Code"
+subtitle: "Exam Name"
+date: "`r format(Sys.Date(), '%d-%m-%Y')`"
+documentclass: exam
+classoption: [answers, addpoints] # comment to hide answers
+fontsize: 12pt
+output:
+  pdf_document:
+    includes:
+      before_body: cover.tex
+      in_header: preamble.tex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, fig.height = 4, fig.width = 4, fig.align = 'center')
+```
+\BQ
+
+# Pressure 
+
+\question[5] Define pressure
+
+\BS
+
+ * Under
+ * Pressure
+ 
+\ES
+\vspace{\stretch{5}}
+\newpage
+
+# Trees 
+\question Looks at the graph below
+
+```{r trees}
+plot(Height ~ Girth, trees)
+```
+
+\BP
+  \part[2]{} What is the predictor variable?
+  \BS
+    Girth
+  \ES
+  \vspace{\stretch{2}}
+  \part[3]{} What is the dependent variable?
+  \BS
+    Height
+  \ES
+  \vspace{\stretch{3}}
+\EP
+
+\EQ
